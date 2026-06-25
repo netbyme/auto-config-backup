@@ -34,55 +34,80 @@ def connect_and_show(device):
         print(f"Connection failed: {e}")
 
 connect_and_show(device)
-# ==================== PART 2 ====================
-# Backup running-config to a timestamped file
+# Part 2 - Save device config to a dated backup file
 
-def backup_config(device, backup_dir="backups"):
-    """
-    Connects to the device, retrieves the running-config,
-    and saves it to a timestamped file in the backup directory.
-    """
-    print(f"\n[Part 2] Starting backup for {device['host']}...")
-    
-    # create backup directory if it doesn't exist
-    if not os.path.exists(backup_dir):
-        os.makedirs(backup_dir)
-        print(f"Created backup directory: {backup_dir}")
+from netmiko import ConnectHandler
+from datetime import datetime
+import os
+
+# create backups folder if it doesn't exist
+if not os.path.exists("backups"):
+    os.makedirs("backups")
+
+def backup_config(device):
+    print(f"Connecting to {device['host']}...")
     
     try:
-        # establish SSH connection
         connection = ConnectHandler(**device)
-        print(f"Connected to {device['host']} for backup.")
+        print("Connected!")
         
-        # retrieve running-config
-        print("Retrieving running-config...")
+        # get the running config
         config = connection.send_command("show running-config")
         
-        # generate timestamped filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        hostname = device['host'].replace(".", "_")
-        filename = f"{backup_dir}/{hostname}_running-config_{timestamp}.txt"
+        # create filename with date and device IP
+        date = datetime.now().strftime("%Y-%m-%d_%H-%M")
+        filename = f"backups/{device['host']}_{date}.txt"
         
-        # write config to file
+        # save config to file
         with open(filename, "w") as f:
             f.write(config)
         
-        print(f"Config saved to: {filename}")
-        
-        # close connection
+        print(f"Config saved to {filename}")
         connection.disconnect()
-        print("Backup complete. Connection closed.")
-        
-        return filename
     
     except Exception as e:
         print(f"Backup failed: {e}")
-        return None
 
-# run both parts
-if __name__ == "__main__":
-    # Part 1
-    connect_and_show(device)
-    
-    # Part 2
+# device to backup
+device = {
+    "device_type": "cisco_ios",
+    "host": "192.168.1.1",
+    "username": "admin",
+    "password": "cisco",
+    "port": 22,
+}
+
+backup_config(device)
+# Part 3 - Loop through multiple devices and backup all configs
+
+devices = [
+    {
+        "device_type": "cisco_ios",
+        "host": "192.168.1.1",
+        "username": "admin",
+        "password": "cisco",
+        "port": 22,
+    },
+    {
+        "device_type": "cisco_ios",
+        "host": "192.168.1.2",
+        "username": "admin",
+        "password": "cisco",
+        "port": 22,
+    },
+    {
+        "device_type": "cisco_ios",
+        "host": "192.168.1.3",
+        "username": "admin",
+        "password": "cisco",
+        "port": 22,
+    },
+]
+
+print("=== Starting Backup for All Devices ===")
+
+# loop through each device and backup
+for device in devices:
     backup_config(device)
+
+print("\n=== All Backups Complete ===")
