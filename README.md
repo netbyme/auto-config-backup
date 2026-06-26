@@ -15,3 +15,16 @@ A Python automation tool that connects to Cisco network devices via SSH and auto
 Network engineers manually backup configs before every change — one missed backup can mean hours of downtime with no way to roll back. This script automates the entire process and saves results with timestamps so you always have a clean backup history.
 
 ## Project structure
+auto-config-backup/
+
+│
+
+├── backup.py          ← main automation script
+
+├── backups/           ← folder where configs are saved
+
+│   ├── 192.168.1.1_2026-06-26_19-29.txt
+
+│   └── summary_2026-06-26_19-29.txt
+
+└── README.md
