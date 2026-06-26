@@ -111,3 +111,55 @@ for device in devices:
     backup_config(device)
 
 print("\n=== All Backups Complete ===")
+# Part 4 - Add error handling and generate a summary report
+
+from datetime import datetime
+
+def backup_all_devices(devices):
+    success = []
+    failed = []
+    
+    print("=== Starting Backup for All Devices ===\n")
+    
+    for device in devices:
+        try:
+            connection = ConnectHandler(**device)
+            config = connection.send_command("show running-config")
+            
+            # save config to dated file
+            date = datetime.now().strftime("%Y-%m-%d_%H-%M")
+            filename = f"backups/{device['host']}_{date}.txt"
+            
+            with open(filename, "w") as f:
+                f.write(config)
+            
+            print(f"[OK]    {device['host']} — saved to {filename}")
+            success.append(device['host'])
+            connection.disconnect()
+        
+        except Exception as e:
+            print(f"[FAILED] {device['host']} — {e}")
+            failed.append(device['host'])
+    
+    # save summary report
+    report_date = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    with open(f"backups/summary_{report_date}.txt", "w") as f:
+        f.write("=== Backup Summary Report ===\n\n")
+        f.write(f"Total devices : {len(devices)}\n")
+        f.write(f"Successful    : {len(success)}\n")
+        f.write(f"Failed        : {len(failed)}\n\n")
+        
+        f.write("--- Successful ---\n")
+        for ip in success:
+            f.write(f"[OK]    {ip}\n")
+        
+        f.write("\n--- Failed ---\n")
+        for ip in failed:
+            f.write(f"[FAILED] {ip}\n")
+    
+    print(f"\n=== Backup Complete ===")
+    print(f"Success: {len(success)} | Failed: {len(failed)}")
+    print(f"Summary saved to backups/summary_{report_date}.txt")
+
+# run the full backup
+backup_all_devices(devices)
