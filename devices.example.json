@@ -1,0 +1,9 @@
+[
+  {
+    "name": "test-router",
+    "device_type": "cisco_ios",
+    "host": "192.168.1.1",
+    "port": 22,
+    "command": "show running-config"
+  }
+]
